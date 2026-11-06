@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>プラコロ3on3</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#19212d;--muted:#687386;--blue:#2563eb;--red:#e11d48;--line:#dce3ee;--green:#16a34a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink)}
+.app{min-height:100vh;padding:12px;display:flex;flex-direction:column;gap:10px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:clamp(24px,3vw,40px);margin:0}.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+button{border:0;border-radius:12px;padding:16px 24px;font-weight:900;font-size:clamp(18px,2.2vw,28px);cursor:pointer;touch-action:manipulation}
+.draw{background:#111827;color:#fff}.redo{background:#e2e8f0;color:#1f2937}.reset{background:#f59e0b;color:#fff}
+.status{text-align:center;font-weight:800;color:var(--muted);font-size:clamp(17px,2vw,25px)}
+.battle{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0}
+.side{background:var(--card);border-radius:18px;padding:12px;border-top:7px solid var(--blue);box-shadow:0 5px 18px #23304a12;display:flex;flex-direction:column;min-width:0}
+.side.p2{border-top-color:var(--red)}
+.side h2{text-align:center;margin:0 0 8px}.player-name{width:100%;max-width:360px;text-align:center;border:2px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:900;font-size:clamp(20px,2.5vw,34px);color:var(--ink);background:#fff;outline:none}.player-name:focus{border-color:#2563eb;box-shadow:0 0 0 3px #2563eb22}.p2 .player-name:focus{border-color:#e11d48;box-shadow:0 0 0 3px #e11d4822}
+.team{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1;min-height:0}
+.mon{border:1px solid var(--line);cursor:pointer;transition:.15s ease;border-radius:15px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;background:#fbfdff}
+.name{font-weight:900;font-size:clamp(18px,2.3vw,31px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;min-height:1.4em}
+.hp{font-size:clamp(46px,6vw,86px);line-height:1;font-weight:950;margin:8px 0;color:var(--green);font-variant-numeric:tabular-nums}
+.stepper{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:220px}
+.stepper button{font-size:clamp(34px,4vw,52px);padding:14px 6px;background:#e8eef8;color:#162033}.stepper .down{background:#fee2e2;color:#b91c1c}.stepper .up{background:#dcfce7;color:#15803d}
+.mon.active{border:4px solid #f59e0b;background:#fff7d6;box-shadow:0 0 0 4px #f59e0b33;transform:translateY(-2px)}.mon.active .name:before{content:"対戦中  ";color:#d97706}.empty{color:#9aa4b2;font-weight:700}
+@media(max-width:700px){.app{padding:7px;gap:6px}.side{padding:7px;border-radius:12px}.team{gap:5px}.mon{padding:5px;border-radius:10px}button{border-radius:9px;padding:7px 10px}.hp{margin:5px 0}.status{font-size:16px}}
+@media(orientation:portrait){.battle{grid-template-columns:1fr}.app:before{content:"横向きでの使用がおすすめです";text-align:center;background:#fff3cd;color:#7a5b00;border-radius:8px;padding:5px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<h1>プラコロ3on3</h1>
+<div class="controls">
+<button id="drawBtn" class="draw">くじを引く</button>
+<button id="redrawBtn" class="redo">引き直す</button>
+<button id="resetBtn" class="reset">もう一度遊ぶ</button>
+</div>
+</header>
+<div id="status" class="status">プレイヤー1が「くじを引く」を押してください</div>
+<main class="battle">
+<section class="side"><h2><input id="player1" class="player-name" type="text" maxlength="12" value="PLAYER 1" aria-label="プレイヤー1の名前"></h2><div id="team1" class="team"></div></section>
+<section class="side p2"><h2><input id="player2" class="player-name" type="text" maxlength="12" value="PLAYER 2" aria-label="プレイヤー2の名前"></h2><div id="team2" class="team"></div></section>
+</main>
+</div>
+<script>
+const pool=['ピカチュウ','ヒトカゲ','フシギダネ','ゼニガメ','ミュウ','イーブイ','ルカリオ','メタグロス','ゲンガー','イワーク','ベトベター','カイロス','ファイヤー','サンダー','フリーザー','ヤミラミ','ゲッコウガ','ボスゴドラ','レックウザ','カヌチャン','ラッキー'];
+let teams=[[],[]], active=[null,null], turn=0;
+const playerInputs=[document.getElementById('player1'),document.getElementById('player2')];
+function pname(i){return playerInputs[i].value.trim()||`PLAYER ${i+1}`;}
+const teamEls=[document.getElementById('team1'),document.getElementById('team2')], statusEl=document.getElementById('status');
+function used(except=-1){return teams.flatMap((t,i)=>i===except?[]:t.map(x=>x.name))}
+function pick1(){const available=pool.filter(x=>!used().includes(x)); if(!available.length)return null; const name=available[Math.floor(Math.random()*available.length)]; return {name,hp:120};}
+function redrawLast(){const total=teams[0].length+teams[1].length;if(total===0)return;const ti=(total-1)%2;const idx=teams[ti].length-1;const old=teams[ti][idx];teams[ti].splice(idx,1);const next=pick1();teams[ti].splice(idx,0,next||old);render();}
+function render(){teamEls.forEach((el,ti)=>{el.innerHTML=''; for(let i=0;i<3;i++){const m=teams[ti][i];const card=document.createElement('div');card.className='mon'+(active[ti]===i?' active':''); if(!m){card.innerHTML='<div class="empty">未抽選</div>'}else{card.innerHTML=`<div class="name">${m.name}</div><div class="hp">${m.hp}</div><div class="stepper"><button type="button" class="down" aria-label="10減らす">▼</button><button type="button" class="up" aria-label="10増やす">▲</button></div>`;card.onclick=()=>{if(teams[0].length===3&&teams[1].length===3){active[ti]=i;render()}};card.querySelector('.down').onclick=(e)=>{e.stopPropagation();change(ti,i,-10)};card.querySelector('.up').onclick=(e)=>{e.stopPropagation();change(ti,i,10)}} el.appendChild(card)}});updateStatus()}
+function change(ti,i,d){const m=teams[ti][i];if(!m)return;m.hp=Math.max(0,Math.min(120,m.hp+d));render()}
+function updateStatus(){const total=teams[0].length+teams[1].length;if(total>=6){const a=active[0]===null?'未選択':teams[0][active[0]].name;const b=active[1]===null?'未選択':teams[1][active[1]].name;statusEl.textContent=`対戦中：${pname(0)}［${a}］ vs ${pname(1)}［${b}］　※ポケモンをタップして随時変更`;return;}const ti=total%2;statusEl.textContent=`${pname(ti)} が「くじを引く」を押してください（${teams[ti].length+1}匹目）`;}
+document.getElementById('drawBtn').onclick=()=>{const total=teams[0].length+teams[1].length;if(total>=6)return;const ti=total%2;const m=pick1();if(m)teams[ti].push(m);render();};
+document.getElementById('redrawBtn').onclick=redrawLast;
+document.getElementById('resetBtn').onclick=()=>{teams=[[],[]];active=[null,null];turn=0;render();};
+playerInputs.forEach(x=>x.addEventListener('input',updateStatus));
+render();
+</script>
+</body>
+</html>

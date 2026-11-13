@@ -1,67 +1,3317 @@
-<!doctype html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+>
+
 <title>プラコロ3on3</title>
+
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--ink:#19212d;--muted:#687386;--blue:#2563eb;--red:#e11d48;--line:#dce3ee;--green:#16a34a}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink)}
-.app{min-height:100vh;padding:12px;display:flex;flex-direction:column;gap:10px}
-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-h1{font-size:clamp(24px,3vw,40px);margin:0}.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-button{border:0;border-radius:12px;padding:16px 24px;font-weight:900;font-size:clamp(18px,2.2vw,28px);cursor:pointer;touch-action:manipulation}
-.draw{background:#111827;color:#fff}.redo{background:#e2e8f0;color:#1f2937}.reset{background:#f59e0b;color:#fff}
-.status{text-align:center;font-weight:800;color:var(--muted);font-size:clamp(17px,2vw,25px)}
-.battle{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0}
-.side{background:var(--card);border-radius:18px;padding:12px;border-top:7px solid var(--blue);box-shadow:0 5px 18px #23304a12;display:flex;flex-direction:column;min-width:0}
-.side.p2{border-top-color:var(--red)}
-.side h2{text-align:center;margin:0 0 8px}.player-name{width:100%;max-width:360px;text-align:center;border:2px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:900;font-size:clamp(20px,2.5vw,34px);color:var(--ink);background:#fff;outline:none}.player-name:focus{border-color:#2563eb;box-shadow:0 0 0 3px #2563eb22}.p2 .player-name:focus{border-color:#e11d48;box-shadow:0 0 0 3px #e11d4822}
-.team{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1;min-height:0}
-.mon{border:1px solid var(--line);cursor:pointer;transition:.15s ease;border-radius:15px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;background:#fbfdff}
-.name{font-weight:900;font-size:clamp(18px,2.3vw,31px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;min-height:1.4em}
-.hp{font-size:clamp(46px,6vw,86px);line-height:1;font-weight:950;margin:8px 0;color:var(--green);font-variant-numeric:tabular-nums}
-.stepper{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:220px}
-.stepper button{font-size:clamp(34px,4vw,52px);padding:14px 6px;background:#e8eef8;color:#162033}.stepper .down{background:#fee2e2;color:#b91c1c}.stepper .up{background:#dcfce7;color:#15803d}
-.mon.active{border:4px solid #f59e0b;background:#fff7d6;box-shadow:0 0 0 4px #f59e0b33;transform:translateY(-2px)}.mon.active .name:before{content:"対戦中  ";color:#d97706}.empty{color:#9aa4b2;font-weight:700}
-@media(max-width:700px){.app{padding:7px;gap:6px}.side{padding:7px;border-radius:12px}.team{gap:5px}.mon{padding:5px;border-radius:10px}button{border-radius:9px;padding:7px 10px}.hp{margin:5px 0}.status{font-size:16px}}
-@media(orientation:portrait){.battle{grid-template-columns:1fr}.app:before{content:"横向きでの使用がおすすめです";text-align:center;background:#fff3cd;color:#7a5b00;border-radius:8px;padding:5px;font-size:12px}}
+:root{
+  --bg:#05070a;
+  --panel:#0b1017;
+  --monitor:#070a0f;
+  --line:#263447;
+  --text:#eaf2ff;
+  --muted:#718096;
+
+  --green:#00d47b;
+  --yellow:#ffd400;
+  --red:#ff334f;
+
+  --blue:#278cff;
+  --pink:#ff3f61;
+  --active:#f59e0b;
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+  width:100%;
+  height:100%;
+
+  margin:0;
+  padding:0;
+
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+
+body{
+  position:fixed;
+  inset:0;
+
+  background:var(--bg);
+  color:var(--text);
+
+  font-family:
+    system-ui,
+    -apple-system,
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    sans-serif;
+
+  user-select:none;
+  -webkit-user-select:none;
+
+  touch-action:none;
+}
+
+button,
+select,
+input{
+  font-family:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+/* =========================
+   全体
+========================= */
+
+.app{
+  width:100%;
+  height:100vh;
+  height:100dvh;
+
+  padding:
+    max(3px,env(safe-area-inset-top))
+    max(5px,env(safe-area-inset-right))
+    max(3px,env(safe-area-inset-bottom))
+    max(5px,env(safe-area-inset-left));
+
+  display:flex;
+  flex-direction:column;
+
+  gap:3px;
+
+  overflow:hidden;
+}
+
+/* =========================
+   ヘッダー
+========================= */
+
+.header{
+  width:100%;
+  height:36px;
+  flex:0 0 36px;
+
+  padding:3px 7px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  gap:6px;
+
+  background:#090d13;
+
+  border:1px solid var(--line);
+  border-radius:9px;
+}
+
+.title-area{
+  min-width:0;
+
+  display:flex;
+  align-items:baseline;
+
+  gap:7px;
+}
+
+.system-label{
+  color:#64748b;
+
+  font-family:
+    "Courier New",
+    ui-monospace,
+    monospace;
+
+  font-size:7px;
+  font-weight:900;
+
+  letter-spacing:1.2px;
+
+  white-space:nowrap;
+}
+
+h1{
+  margin:0;
+
+  color:#ffffff;
+
+  font-size:clamp(14px,2.4vw,20px);
+  font-weight:950;
+
+  white-space:nowrap;
+}
+
+.header-controls{
+  display:flex;
+  align-items:center;
+
+  gap:3px;
+
+  flex-shrink:0;
+}
+
+.mode-select{
+  height:27px;
+
+  padding:3px 25px 3px 7px;
+
+  appearance:none;
+  -webkit-appearance:none;
+
+  background:#0c121b;
+  color:#ffffff;
+
+  border:1px solid #3a4656;
+  border-radius:6px;
+
+  font-size:9px;
+  font-weight:900;
+
+  outline:none;
+
+  touch-action:manipulation;
+}
+
+.mode-select option{
+  background:#ffffff;
+  color:#000000;
+}
+
+.control-button{
+  min-height:27px;
+
+  padding:3px 8px;
+
+  color:#ffffff;
+
+  border:1px solid #3a4656;
+  border-radius:6px;
+
+  font-size:8px;
+  font-weight:900;
+
+  touch-action:manipulation;
+}
+
+.draw-button{
+  background:#14532d;
+  border-color:#22c55e;
+}
+
+.redraw-button{
+  background:#172131;
+}
+
+.reset-button{
+  background:#7c2d12;
+  border-color:#ea580c;
+}
+
+.control-button:active,
+.side-reset:active,
+.monster-reset:active,
+.evolution-button:active{
+  transform:scale(.95);
+}
+
+.hidden{
+  display:none !important;
+}
+
+/* =========================
+   ステータス
+========================= */
+
+.status{
+  width:100%;
+  height:18px;
+  flex:0 0 18px;
+
+  padding:2px 7px;
+
+  background:#0b1017;
+
+  border:1px solid #202c3b;
+  border-radius:6px;
+
+  color:#9aa8ba;
+
+  font-family:
+    "Courier New",
+    ui-monospace,
+    monospace;
+
+  font-size:8px;
+  font-weight:900;
+
+  text-align:center;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* =========================
+   左右の対戦エリア
+========================= */
+
+.battle{
+  width:100%;
+
+  flex:1;
+  min-height:0;
+
+  display:grid;
+  grid-template-columns:1fr 1fr;
+
+  gap:3px;
+
+  overflow:hidden;
+}
+
+.side{
+  min-width:0;
+  min-height:0;
+
+  padding:3px;
+
+  background:var(--panel);
+
+  border:1px solid var(--line);
+  border-top:3px solid var(--blue);
+  border-radius:10px;
+
+  display:flex;
+  flex-direction:column;
+
+  overflow:hidden;
+}
+
+.side.p2{
+  border-top-color:var(--pink);
+}
+
+/* =========================
+   プレイヤー欄
+========================= */
+
+.side-header{
+  width:100%;
+  height:28px;
+  flex:0 0 28px;
+
+  display:grid;
+  grid-template-columns:1fr auto;
+
+  gap:3px;
+}
+
+.player-name{
+  width:100%;
+  height:28px;
+
+  padding:2px 6px;
+
+  background:#0c121b;
+  color:#ffffff;
+
+  border:1px solid #354255;
+  border-radius:6px;
+
+  font-size:clamp(11px,1.7vw,15px);
+  font-weight:950;
+
+  text-align:center;
+  outline:none;
+
+  user-select:text;
+  -webkit-user-select:text;
+
+  touch-action:manipulation;
+}
+
+.side-reset{
+  height:28px;
+
+  padding:2px 6px;
+
+  background:#171f2b;
+  color:#ffffff;
+
+  border:1px solid #3a4656;
+  border-radius:6px;
+
+  font-size:7px;
+  font-weight:900;
+
+  touch-action:manipulation;
+}
+
+/* =========================
+   3匹の表示
+========================= */
+
+.team{
+  width:100%;
+
+  flex:1;
+  min-height:0;
+
+  margin-top:3px;
+
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+
+  gap:3px;
+
+  overflow:hidden;
+}
+
+.monster-unit{
+  min-width:0;
+  min-height:0;
+
+  padding:2px;
+
+  background:var(--monitor);
+
+  border:1px solid #29364a;
+  border-radius:8px;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  position:relative;
+
+  overflow:hidden;
+
+  transition:
+    border-color .12s ease,
+    background-color .12s ease;
+}
+
+/* 対戦中 */
+
+.monster-unit.active{
+  border:3px solid var(--active);
+
+  background:#171208;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(245,158,11,.28);
+}
+
+.active-badge{
+  position:absolute;
+
+  top:2px;
+  left:2px;
+
+  z-index:12;
+
+  display:none;
+
+  padding:1px 4px;
+
+  background:var(--active);
+  color:#191105;
+
+  border-radius:4px;
+
+  font-size:clamp(6px,.9vw,8px);
+  font-weight:950;
+
+  pointer-events:none;
+}
+
+.monster-unit.active .active-badge{
+  display:block;
+}
+
+/* =========================
+   ポケモン名
+========================= */
+
+.monster-name{
+  width:100%;
+  height:25px;
+  flex:0 0 25px;
+
+  padding:2px 1px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:transparent;
+  color:#ffffff;
+
+  border:0;
+  border-radius:5px;
+
+  font-size:clamp(11px,1.65vw,16px);
+  font-weight:950;
+
+  text-align:center;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+
+  touch-action:manipulation;
+}
+
+.monster-name:active{
+  background:#182130;
+}
+
+.monster-unit.active .monster-name{
+  color:#ffc15c;
+}
+
+/* =========================
+   フリー対戦選択欄
+========================= */
+
+.free-select{
+  width:100%;
+  height:25px;
+  flex:0 0 25px;
+
+  padding:2px 17px 2px 3px;
+
+  appearance:none;
+  -webkit-appearance:none;
+
+  background:#0c121b;
+  color:#ffffff;
+
+  border:1px solid #354255;
+  border-radius:5px;
+
+  font-size:clamp(9px,1.35vw,12px);
+  font-weight:950;
+
+  text-align:center;
+  text-align-last:center;
+
+  outline:none;
+
+  touch-action:manipulation;
+}
+
+.free-select option{
+  background:#ffffff;
+  color:#000000;
+}
+
+.current-name{
+  width:100%;
+  height:19px;
+  flex:0 0 19px;
+
+  padding:1px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:transparent;
+  color:#ffffff;
+
+  border:0;
+  border-radius:4px;
+
+  font-size:clamp(10px,1.45vw,14px);
+  font-weight:950;
+
+  text-align:center;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+
+  touch-action:manipulation;
+}
+
+.current-name:active{
+  background:#182130;
+}
+
+.monster-unit.active .current-name{
+  color:#ffc15c;
+}
+
+/* =========================
+   未抽選
+========================= */
+
+.empty-slot{
+  width:100%;
+  height:100%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#536174;
+
+  font-size:10px;
+  font-weight:900;
+}
+
+/* =========================
+   ダイヤル
+========================= */
+
+.dial-container{
+  width:100%;
+
+  max-height:calc(100% - 45px);
+
+  aspect-ratio:1/1;
+
+  flex:1 1 auto;
+  min-height:0;
+
+  position:relative;
+
+  touch-action:none;
+  overscroll-behavior:none;
+
+  cursor:grab;
+}
+
+.monster-unit.free-mode .dial-container{
+  max-height:calc(100% - 65px);
+}
+
+.dial-container.dragging{
+  cursor:grabbing;
+}
+
+.dial-container.disabled{
+  opacity:.25;
+  pointer-events:none;
+}
+
+.hp-dial{
+  width:100%;
+  height:100%;
+
+  display:block;
+  overflow:visible;
+
+  touch-action:none;
+}
+
+.outer-case{
+  fill:#05080c;
+
+  stroke:#263447;
+  stroke-width:6;
+}
+
+.outer-detail{
+  fill:none;
+
+  stroke:#111924;
+  stroke-width:11;
+}
+
+.dial-track{
+  fill:none;
+
+  stroke:#1d2734;
+  stroke-width:27;
+}
+
+.dial-progress{
+  fill:none;
+
+  stroke:var(--green);
+  stroke-width:27;
+
+  transform:rotate(-90deg);
+  transform-origin:180px 180px;
+}
+
+.dial-center{
+  fill:#05080c;
+
+  stroke:#28374a;
+  stroke-width:4;
+}
+
+.dial-center-inner{
+  fill:#090e14;
+
+  stroke:#162333;
+  stroke-width:2;
+}
+
+/* =========================
+   HP数字
+========================= */
+
+.dial-hp-label{
+  fill:#69778a;
+
+  font-family:
+    "Courier New",
+    ui-monospace,
+    monospace;
+
+  font-size:18px;
+  font-weight:900;
+
+  letter-spacing:5px;
+
+  text-anchor:middle;
+}
+
+.dial-hp-value{
+  fill:var(--green);
+
+  font-family:
+    "Courier New",
+    ui-monospace,
+    monospace;
+
+  font-size:76px;
+  font-weight:950;
+
+  text-anchor:middle;
+
+  font-variant-numeric:tabular-nums;
+}
+
+.dial-percent{
+  fill:#8290a3;
+
+  font-family:
+    "Courier New",
+    ui-monospace,
+    monospace;
+
+  font-size:13px;
+  font-weight:900;
+
+  text-anchor:middle;
+}
+
+/* =========================
+   目盛り
+========================= */
+
+.scale-line{
+  stroke:#46566a;
+
+  stroke-width:2;
+  stroke-linecap:round;
+
+  pointer-events:none;
+}
+
+.scale-line.major{
+  stroke:#8d9bad;
+  stroke-width:4;
+}
+
+.scale-label{
+  fill:#aebccc;
+
+  font-family:
+    "Courier New",
+    ui-monospace,
+    monospace;
+
+  font-size:12px;
+  font-weight:900;
+
+  text-anchor:middle;
+
+  pointer-events:none;
+}
+
+/* =========================
+   操作ノブ
+========================= */
+
+.dial-handle{
+  fill:#05080c;
+
+  stroke:var(--green);
+  stroke-width:6;
+
+  pointer-events:none;
+}
+
+.handle-center{
+  fill:var(--green);
+
+  pointer-events:none;
+}
+
+.handle-line{
+  stroke:#05080c;
+
+  stroke-width:2;
+  stroke-linecap:round;
+
+  pointer-events:none;
+}
+
+/* =========================
+   進化・リセット
+========================= */
+
+.evolution-button{
+  position:absolute;
+
+  right:3px;
+  bottom:3px;
+
+  z-index:10;
+
+  width:38px;
+  height:38px;
+
+  padding:0;
+
+  display:none;
+  align-items:center;
+  justify-content:center;
+
+  background:#16a34a;
+  color:#ffffff;
+
+  border:2px solid #86efac;
+  border-radius:50%;
+
+  box-shadow:
+    0 3px 0 #075d2b,
+    0 4px 7px rgba(0,0,0,.4);
+
+  font-size:9px;
+  font-weight:950;
+
+  touch-action:manipulation;
+}
+
+.evolution-button.show{
+  display:flex;
+}
+
+.evolution-button:disabled{
+  display:none;
+}
+
+.monster-reset{
+  position:absolute;
+
+  left:3px;
+  bottom:3px;
+
+  z-index:10;
+
+  min-width:31px;
+  height:18px;
+
+  padding:1px 3px;
+
+  background:#171f2b;
+  color:#ffffff;
+
+  border:1px solid #3a4656;
+  border-radius:4px;
+
+  font-size:6px;
+  font-weight:900;
+
+  touch-action:manipulation;
+}
+
+/* =========================
+   進化演出
+========================= */
+
+.evolution-overlay{
+  position:absolute;
+  inset:0;
+
+  z-index:20;
+
+  display:none;
+  align-items:center;
+  justify-content:center;
+
+  overflow:hidden;
+
+  background:rgba(1,6,8,.7);
+
+  pointer-events:none;
+}
+
+.evolution-overlay.active{
+  display:flex;
+
+  animation:evolutionBackground 1.5s ease both;
+}
+
+.evolution-ring{
+  position:absolute;
+
+  width:20px;
+  height:20px;
+
+  border:4px solid #ffffff;
+  border-radius:50%;
+
+  opacity:0;
+}
+
+.evolution-overlay.active .evolution-ring{
+  animation:evolutionRing 1.35s ease-out both;
+}
+
+.evolution-ring.second{
+  animation-delay:.18s !important;
+}
+
+.evolution-ring.third{
+  animation-delay:.36s !important;
+}
+
+.evolution-text{
+  position:relative;
+  z-index:2;
+
+  color:#ffffff;
+
+  font-family:
+    "Courier New",
+    ui-monospace,
+    monospace;
+
+  font-size:clamp(12px,2.2vw,20px);
+  font-weight:950;
+
+  letter-spacing:1px;
+
+  text-align:center;
+
+  opacity:0;
+
+  text-shadow:
+    0 2px 0 #087a39,
+    0 0 10px #22c55e;
+}
+
+.evolution-overlay.active .evolution-text{
+  animation:evolutionText 1.5s ease both;
+}
+
+.monster-unit.evolving{
+  animation:monitorEvolution 1.5s ease;
+}
+
+.monster-unit.evolving .dial-progress{
+  animation:gaugeEvolution 1.5s ease;
+}
+
+.monster-unit.evolving .dial-hp-value{
+  animation:numberEvolution 1.5s ease;
+}
+
+@keyframes evolutionBackground{
+  0%,100%{
+    background:rgba(1,6,8,0);
+  }
+
+  25%{
+    background:rgba(1,15,8,.8);
+  }
+
+  65%{
+    background:rgba(4,35,17,.85);
+  }
+}
+
+@keyframes evolutionRing{
+  0%{
+    width:20px;
+    height:20px;
+    opacity:0;
+  }
+
+  15%{
+    opacity:1;
+  }
+
+  70%{
+    opacity:.8;
+    border-color:#22c55e;
+  }
+
+  100%{
+    width:330px;
+    height:330px;
+    opacity:0;
+    border-width:1px;
+  }
+}
+
+@keyframes evolutionText{
+  0%{
+    opacity:0;
+    transform:scale(.55);
+    filter:blur(7px);
+  }
+
+  30%{
+    opacity:1;
+    transform:scale(1.15);
+    filter:blur(0);
+  }
+
+  65%{
+    opacity:1;
+    transform:scale(1);
+  }
+
+  100%{
+    opacity:0;
+    transform:scale(1.06);
+  }
+}
+
+@keyframes monitorEvolution{
+  0%,100%{
+    border-color:#29364a;
+  }
+
+  25%{
+    border-color:#ffffff;
+  }
+
+  50%{
+    border-color:#22c55e;
+
+    box-shadow:
+      inset 0 0 20px rgba(34,197,94,.35),
+      0 0 15px rgba(34,197,94,.65);
+  }
+}
+
+@keyframes gaugeEvolution{
+  0%,100%{
+    opacity:1;
+  }
+
+  20%{
+    opacity:.15;
+    stroke:#ffffff;
+  }
+
+  40%{
+    opacity:1;
+    stroke:#22c55e;
+  }
+
+  60%{
+    opacity:.25;
+  }
+}
+
+@keyframes numberEvolution{
+  0%,100%{
+    opacity:1;
+    transform:scale(1);
+    transform-origin:center;
+  }
+
+  25%{
+    opacity:0;
+    transform:scale(.55);
+  }
+
+  55%{
+    opacity:1;
+    transform:scale(1.2);
+  }
+}
+
+/* =========================
+   低い横画面
+========================= */
+
+@media(max-height:450px) and (orientation:landscape){
+
+  .app{
+    gap:2px;
+  }
+
+  .header{
+    height:31px;
+    flex-basis:31px;
+  }
+
+  .system-label{
+    display:none;
+  }
+
+  h1{
+    font-size:13px;
+  }
+
+  .status{
+    height:15px;
+    flex-basis:15px;
+
+    padding:1px 5px;
+
+    font-size:7px;
+  }
+
+  .side-header{
+    height:25px;
+    flex-basis:25px;
+  }
+
+  .player-name,
+  .side-reset{
+    height:25px;
+  }
+
+  .monster-name{
+    height:21px;
+    flex-basis:21px;
+
+    font-size:clamp(10px,1.5vw,13px);
+  }
+
+  .free-select{
+    height:21px;
+    flex-basis:21px;
+
+    font-size:8px;
+  }
+
+  .current-name{
+    height:16px;
+    flex-basis:16px;
+
+    font-size:10px;
+  }
+
+  .dial-hp-value{
+    font-size:70px;
+  }
+
+  .evolution-button{
+    width:32px;
+    height:32px;
+
+    font-size:8px;
+  }
+}
+
+/* =========================
+   縦画面案内
+========================= */
+
+.rotate-message{
+  display:none;
+}
+
+@media(orientation:portrait){
+
+  .app{
+    display:none;
+  }
+
+  .rotate-message{
+    position:fixed;
+    inset:0;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    padding:25px;
+
+    background:#05070a;
+    color:#ffffff;
+
+    text-align:center;
+  }
+
+  .rotate-icon{
+    margin-bottom:18px;
+
+    font-size:64px;
+
+    transform:rotate(90deg);
+  }
+
+  .rotate-title{
+    margin-bottom:10px;
+
+    font-size:24px;
+    font-weight:950;
+  }
+
+  .rotate-text{
+    color:#8b9aae;
+
+    font-size:14px;
+    font-weight:800;
+
+    line-height:1.7;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+
+  *,
+  *::before,
+  *::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <div class="app">
-<header>
-<h1>プラコロ3on3</h1>
-<div class="controls">
-<button id="drawBtn" class="draw">くじを引く</button>
-<button id="redrawBtn" class="redo">引き直す</button>
-<button id="resetBtn" class="reset">もう一度遊ぶ</button>
+
+  <header class="header">
+
+    <div class="title-area">
+
+      <span class="system-label">
+        RANDOM / FREE 3ON3
+      </span>
+
+      <h1>
+        プラコロ3on3
+      </h1>
+
+    </div>
+
+    <div class="header-controls">
+
+      <select
+        id="modeSelect"
+        class="mode-select"
+        aria-label="対戦モード"
+      >
+        <option value="random">
+          ランダム対戦
+        </option>
+
+        <option value="free">
+          フリー対戦
+        </option>
+      </select>
+
+      <button
+        id="drawBtn"
+        class="control-button draw-button"
+        type="button"
+      >
+        くじを引く
+      </button>
+
+      <button
+        id="redrawBtn"
+        class="control-button redraw-button"
+        type="button"
+      >
+        引き直す
+      </button>
+
+      <button
+        id="resetBtn"
+        class="control-button reset-button"
+        type="button"
+      >
+        RESET
+      </button>
+
+    </div>
+
+  </header>
+
+  <div
+    id="status"
+    class="status"
+  >
+    PLAYER 1が「くじを引く」を押してください
+  </div>
+
+  <main class="battle">
+
+    <section
+      class="side p1"
+      data-player="0"
+    >
+
+      <div class="side-header">
+
+        <input
+          class="player-name"
+          type="text"
+          maxlength="12"
+          value="PLAYER 1"
+          aria-label="プレイヤー1の名前"
+        >
+
+        <button
+          class="side-reset"
+          type="button"
+        >
+          SIDE RESET
+        </button>
+
+      </div>
+
+      <div class="team"></div>
+
+    </section>
+
+    <section
+      class="side p2"
+      data-player="1"
+    >
+
+      <div class="side-header">
+
+        <input
+          class="player-name"
+          type="text"
+          maxlength="12"
+          value="PLAYER 2"
+          aria-label="プレイヤー2の名前"
+        >
+
+        <button
+          class="side-reset"
+          type="button"
+        >
+          SIDE RESET
+        </button>
+
+      </div>
+
+      <div class="team"></div>
+
+    </section>
+
+  </main>
+
 </div>
-</header>
-<div id="status" class="status">プレイヤー1が「くじを引く」を押してください</div>
-<main class="battle">
-<section class="side"><h2><input id="player1" class="player-name" type="text" maxlength="12" value="PLAYER 1" aria-label="プレイヤー1の名前"></h2><div id="team1" class="team"></div></section>
-<section class="side p2"><h2><input id="player2" class="player-name" type="text" maxlength="12" value="PLAYER 2" aria-label="プレイヤー2の名前"></h2><div id="team2" class="team"></div></section>
-</main>
+
+<div class="rotate-message">
+
+  <div class="rotate-icon">
+    📱
+  </div>
+
+  <div class="rotate-title">
+    スマートフォンを横向きにしてください
+  </div>
+
+  <div class="rotate-text">
+    3on3カウンターは<br>
+    横画面で使用できます
+  </div>
+
 </div>
+
 <script>
-const pool=['ピカチュウ','ヒトカゲ','フシギダネ','ゼニガメ','ミュウ','イーブイ','ルカリオ','メタグロス','ゲンガー','イワーク','ベトベター','カイロス','ファイヤー','サンダー','フリーザー','ヤミラミ','ゲッコウガ','ボスゴドラ','レックウザ','カヌチャン','ラッキー'];
-let teams=[[],[]], active=[null,null], turn=0;
-const playerInputs=[document.getElementById('player1'),document.getElementById('player2')];
-function pname(i){return playerInputs[i].value.trim()||`PLAYER ${i+1}`;}
-const teamEls=[document.getElementById('team1'),document.getElementById('team2')], statusEl=document.getElementById('status');
-function used(except=-1){return teams.flatMap((t,i)=>i===except?[]:t.map(x=>x.name))}
-function pick1(){const available=pool.filter(x=>!used().includes(x)); if(!available.length)return null; const name=available[Math.floor(Math.random()*available.length)]; return {name,hp:120};}
-function redrawLast(){const total=teams[0].length+teams[1].length;if(total===0)return;const ti=(total-1)%2;const idx=teams[ti].length-1;const old=teams[ti][idx];teams[ti].splice(idx,1);const next=pick1();teams[ti].splice(idx,0,next||old);render();}
-function render(){teamEls.forEach((el,ti)=>{el.innerHTML=''; for(let i=0;i<3;i++){const m=teams[ti][i];const card=document.createElement('div');card.className='mon'+(active[ti]===i?' active':''); if(!m){card.innerHTML='<div class="empty">未抽選</div>'}else{card.innerHTML=`<div class="name">${m.name}</div><div class="hp">${m.hp}</div><div class="stepper"><button type="button" class="down" aria-label="10減らす">▼</button><button type="button" class="up" aria-label="10増やす">▲</button></div>`;card.onclick=()=>{if(teams[0].length===3&&teams[1].length===3){active[ti]=i;render()}};card.querySelector('.down').onclick=(e)=>{e.stopPropagation();change(ti,i,-10)};card.querySelector('.up').onclick=(e)=>{e.stopPropagation();change(ti,i,10)}} el.appendChild(card)}});updateStatus()}
-function change(ti,i,d){const m=teams[ti][i];if(!m)return;m.hp=Math.max(0,Math.min(120,m.hp+d));render()}
-function updateStatus(){const total=teams[0].length+teams[1].length;if(total>=6){const a=active[0]===null?'未選択':teams[0][active[0]].name;const b=active[1]===null?'未選択':teams[1][active[1]].name;statusEl.textContent=`対戦中：${pname(0)}［${a}］ vs ${pname(1)}［${b}］　※ポケモンをタップして随時変更`;return;}const ti=total%2;statusEl.textContent=`${pname(ti)} が「くじを引く」を押してください（${teams[ti].length+1}匹目）`;}
-document.getElementById('drawBtn').onclick=()=>{const total=teams[0].length+teams[1].length;if(total>=6)return;const ti=total%2;const m=pick1();if(m)teams[ti].push(m);render();};
-document.getElementById('redrawBtn').onclick=redrawLast;
-document.getElementById('resetBtn').onclick=()=>{teams=[[],[]];active=[null,null];turn=0;render();};
-playerInputs.forEach(x=>x.addEventListener('input',updateStatus));
-render();
+/* =========================
+   データ
+========================= */
+
+const pokemonPool = [
+  "ピカチュウ",
+  "ヒトカゲ",
+  "フシギダネ",
+  "ゼニガメ",
+  "ミュウ",
+  "イーブイ",
+  "ルカリオ",
+  "メタグロス",
+  "ゲンガー",
+  "イワーク",
+  "ベトベター",
+  "カイロス",
+  "ファイヤー",
+  "サンダー",
+  "フリーザー",
+  "ヤミラミ",
+  "ゲッコウガ",
+  "ボスゴドラ",
+  "レックウザ",
+  "カヌチャン",
+  "ラッキー"
+  "カイリュー"'
+  "チルタリス"'
+];
+
+const evolutionData = {
+  "ヒトカゲ":[
+    {name:"ヒトカゲ",maxHp:120},
+    {name:"リザード",maxHp:150},
+    {name:"リザードン",maxHp:180}
+  ],
+
+  "フシギダネ":[
+    {name:"フシギダネ",maxHp:120},
+    {name:"フシギソウ",maxHp:150},
+    {name:"フシギバナ",maxHp:180}
+  ],
+
+  "ゼニガメ":[
+    {name:"ゼニガメ",maxHp:120},
+    {name:"カメール",maxHp:150},
+    {name:"カメックス",maxHp:180}
+  ]
+};
+
+/* =========================
+   設定
+========================= */
+
+const BASE_MAX_HP = 120;
+const MIN_HP = 0;
+const HP_STEP = 10;
+const TAP_MOVE_THRESHOLD = 8;
+
+const CENTER_X = 180;
+const CENTER_Y = 180;
+
+const DIAL_RADIUS = 137;
+const HANDLE_RADIUS = DIAL_RADIUS;
+
+const SCALE_INNER_RADIUS = 153;
+const SCALE_OUTER_RADIUS = 161;
+const LABEL_RADIUS = 169;
+
+const CIRCUMFERENCE =
+  2 * Math.PI * DIAL_RADIUS;
+
+/* =========================
+   状態
+========================= */
+
+let mode = "random";
+
+let teams = [
+  [null,null,null],
+  [null,null,null]
+];
+
+let active = [
+  null,
+  null
+];
+
+let lastDraw = null;
+
+/* =========================
+   DOM
+========================= */
+
+const modeSelect =
+  document.getElementById("modeSelect");
+
+const drawBtn =
+  document.getElementById("drawBtn");
+
+const redrawBtn =
+  document.getElementById("redrawBtn");
+
+const resetBtn =
+  document.getElementById("resetBtn");
+
+const statusEl =
+  document.getElementById("status");
+
+const players = [
+  createPlayer(0),
+  createPlayer(1)
+];
+
+function createPlayer(index){
+
+  const root =
+    document.querySelector(
+      `.side[data-player="${index}"]`
+    );
+
+  return {
+    index,
+    root,
+
+    nameInput:
+      root.querySelector(".player-name"),
+
+    resetButton:
+      root.querySelector(".side-reset"),
+
+    teamElement:
+      root.querySelector(".team")
+  };
+}
+
+/* =========================
+   共通関数
+========================= */
+
+function playerName(index){
+
+  return players[index]
+    .nameInput
+    .value
+    .trim() ||
+    `PLAYER ${index + 1}`;
+}
+
+function createMonster(baseName){
+
+  if(!baseName){
+    return null;
+  }
+
+  return {
+    baseName,
+    name:baseName,
+
+    hp:BASE_MAX_HP,
+    maxHp:BASE_MAX_HP,
+
+    evolutionStage:0,
+    isEvolving:false,
+
+    isDragging:false,
+    pointerMoved:false,
+
+    pointerStartX:0,
+    pointerStartY:0,
+
+    previousPointerAngle:null,
+    accumulatedAngle:0
+  };
+}
+
+function usedBaseNames(){
+
+  return teams
+    .flat()
+    .filter(Boolean)
+    .map(monster => monster.baseName);
+}
+
+function randomMonster(){
+
+  const used =
+    usedBaseNames();
+
+  const available =
+    pokemonPool.filter(
+      name => !used.includes(name)
+    );
+
+  if(!available.length){
+    return null;
+  }
+
+  const name =
+    available[
+      Math.floor(
+        Math.random() *
+        available.length
+      )
+    ];
+
+  return createMonster(name);
+}
+
+function getEvolutionLine(monster){
+
+  if(!monster){
+    return null;
+  }
+
+  return evolutionData[
+    monster.baseName
+  ] || null;
+}
+
+function hasNextEvolution(monster){
+
+  const line =
+    getEvolutionLine(monster);
+
+  return Boolean(
+    line &&
+    monster.evolutionStage <
+      line.length - 1
+  );
+}
+
+function getHpColor(hp){
+
+  if(hp <= 40){
+    return "#ff334f";
+  }
+
+  if(hp <= 80){
+    return "#ffd400";
+  }
+
+  return "#00d47b";
+}
+
+function polarToCartesian(
+  centerX,
+  centerY,
+  radius,
+  angle
+){
+
+  const radians =
+    angle * Math.PI / 180;
+
+  return {
+    x:
+      centerX +
+      radius * Math.cos(radians),
+
+    y:
+      centerY +
+      radius * Math.sin(radians)
+  };
+}
+
+function degreesPerStep(monster){
+
+  return 360 /
+    (monster.maxHp / HP_STEP);
+}
+
+function hpToAngle(monster){
+
+  return -90 +
+    (
+      monster.hp /
+      monster.maxHp
+    ) *
+    360;
+}
+
+/* =========================
+   目盛り
+========================= */
+
+function createScale(
+  linesElement,
+  labelsElement,
+  maxHp
+){
+
+  linesElement.innerHTML = "";
+  labelsElement.innerHTML = "";
+
+  for(
+    let value = 0;
+    value < maxHp;
+    value += HP_STEP
+  ){
+
+    const angle =
+      -90 +
+      (value / maxHp) *
+      360;
+
+    const isMajor =
+      value % 30 === 0;
+
+    const innerRadius =
+      isMajor
+        ? SCALE_INNER_RADIUS - 6
+        : SCALE_INNER_RADIUS;
+
+    const start =
+      polarToCartesian(
+        CENTER_X,
+        CENTER_Y,
+        innerRadius,
+        angle
+      );
+
+    const end =
+      polarToCartesian(
+        CENTER_X,
+        CENTER_Y,
+        SCALE_OUTER_RADIUS,
+        angle
+      );
+
+    const line =
+      document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+
+    line.setAttribute("x1",start.x);
+    line.setAttribute("y1",start.y);
+    line.setAttribute("x2",end.x);
+    line.setAttribute("y2",end.y);
+
+    line.setAttribute(
+      "class",
+      isMajor
+        ? "scale-line major"
+        : "scale-line"
+    );
+
+    linesElement.appendChild(line);
+
+    if(isMajor){
+
+      const position =
+        polarToCartesian(
+          CENTER_X,
+          CENTER_Y,
+          LABEL_RADIUS,
+          angle
+        );
+
+      const text =
+        document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "text"
+        );
+
+      text.setAttribute("x",position.x);
+      text.setAttribute("y",position.y + 4);
+      text.setAttribute("class","scale-label");
+
+      text.textContent =
+        value === 0
+          ? `0/${maxHp}`
+          : value;
+
+      labelsElement.appendChild(text);
+    }
+  }
+}
+
+/* =========================
+   ダイヤルHTML
+========================= */
+
+function dialMarkup(){
+
+  return `
+    <div
+      class="dial-container"
+      role="slider"
+      aria-valuemin="0"
+      aria-valuemax="120"
+      aria-valuenow="120"
+      tabindex="0"
+    >
+      <svg
+        class="hp-dial"
+        viewBox="0 0 360 360"
+        aria-hidden="true"
+      >
+        <circle
+          class="outer-case"
+          cx="180"
+          cy="180"
+          r="167"
+        ></circle>
+
+        <circle
+          class="outer-detail"
+          cx="180"
+          cy="180"
+          r="153"
+        ></circle>
+
+        <circle
+          class="dial-track"
+          cx="180"
+          cy="180"
+          r="137"
+        ></circle>
+
+        <circle
+          class="dial-progress"
+          cx="180"
+          cy="180"
+          r="137"
+        ></circle>
+
+        <g class="scale-lines"></g>
+        <g class="scale-labels"></g>
+
+        <circle
+          class="dial-center"
+          cx="180"
+          cy="180"
+          r="96"
+        ></circle>
+
+        <circle
+          class="dial-center-inner"
+          cx="180"
+          cy="180"
+          r="87"
+        ></circle>
+
+        <text
+          class="dial-hp-label"
+          x="180"
+          y="144"
+        >
+          HP
+        </text>
+
+        <text
+          class="dial-hp-value"
+          x="180"
+          y="220"
+        >
+          120
+        </text>
+
+        <text
+          class="dial-percent"
+          x="180"
+          y="252"
+        >
+          100%
+        </text>
+
+        <circle
+          class="dial-handle"
+          cx="180"
+          cy="43"
+          r="16"
+        ></circle>
+
+        <circle
+          class="handle-center"
+          cx="180"
+          cy="43"
+          r="6"
+        ></circle>
+
+        <line
+          class="handle-line"
+          x1="180"
+          y1="39"
+          x2="180"
+          y2="47"
+        ></line>
+      </svg>
+    </div>
+
+    <button
+      class="monster-reset"
+      type="button"
+    >
+      RESET
+    </button>
+
+    <button
+      class="evolution-button"
+      type="button"
+    >
+      進化
+    </button>
+
+    <div class="evolution-overlay">
+      <div class="evolution-ring"></div>
+      <div class="evolution-ring second"></div>
+      <div class="evolution-ring third"></div>
+
+      <div class="evolution-text">
+        EVOLUTION
+      </div>
+    </div>
+  `;
+}
+
+/* =========================
+   対戦中選択
+========================= */
+
+function setActivePokemon(
+  playerIndex,
+  slot
+){
+
+  if(!teams[playerIndex][slot]){
+    return;
+  }
+
+  active[playerIndex] =
+    slot;
+
+  renderAll();
+}
+
+/* =========================
+   チーム表示
+========================= */
+
+function renderTeams(){
+
+  players.forEach(player => {
+
+    player.teamElement.innerHTML = "";
+
+    for(
+      let slot = 0;
+      slot < 3;
+      slot++
+    ){
+
+      const monster =
+        teams[player.index][slot];
+
+      const unit =
+        document.createElement("div");
+
+      unit.className =
+        "monster-unit";
+
+      unit.dataset.player =
+        player.index;
+
+      unit.dataset.slot =
+        slot;
+
+      if(
+        active[player.index] === slot &&
+        monster
+      ){
+        unit.classList.add("active");
+      }
+
+      const activeBadge =
+        document.createElement("div");
+
+      activeBadge.className =
+        "active-badge";
+
+      activeBadge.textContent =
+        "対戦中";
+
+      unit.appendChild(activeBadge);
+
+      if(
+        mode === "random" &&
+        !monster
+      ){
+
+        const empty =
+          document.createElement("div");
+
+        empty.className =
+          "empty-slot";
+
+        empty.textContent =
+          "未抽選";
+
+        unit.appendChild(empty);
+
+        player.teamElement.appendChild(unit);
+
+        continue;
+      }
+
+      if(mode === "free"){
+
+        unit.classList.add("free-mode");
+
+        const freeSelect =
+          document.createElement("select");
+
+        freeSelect.className =
+          "free-select";
+
+        freeSelect.setAttribute(
+          "aria-label",
+          `${playerName(player.index)}の${slot + 1}匹目`
+        );
+
+        const blank =
+          document.createElement("option");
+
+        blank.value = "";
+        blank.textContent =
+          "ポケモン選択";
+
+        freeSelect.appendChild(blank);
+
+        pokemonPool.forEach(name => {
+
+          const option =
+            document.createElement("option");
+
+          option.value = name;
+          option.textContent = name;
+
+          if(
+            monster &&
+            monster.baseName === name
+          ){
+            option.selected = true;
+          }
+
+          freeSelect.appendChild(option);
+        });
+
+        freeSelect.addEventListener(
+          "change",
+          event => {
+
+            event.stopPropagation();
+
+            const selectedName =
+              freeSelect.value;
+
+            teams[player.index][slot] =
+              createMonster(selectedName);
+
+            active[player.index] =
+              selectedName
+                ? slot
+                : null;
+
+            renderAll();
+          }
+        );
+
+        unit.appendChild(freeSelect);
+
+        const currentName =
+          document.createElement("button");
+
+        currentName.type =
+          "button";
+
+        currentName.className =
+          "current-name";
+
+        currentName.textContent =
+          monster
+            ? monster.name
+            : "未選択";
+
+        currentName.disabled =
+          !monster;
+
+        currentName.addEventListener(
+          "click",
+          event => {
+
+            event.stopPropagation();
+
+            setActivePokemon(
+              player.index,
+              slot
+            );
+          }
+        );
+
+        unit.appendChild(currentName);
+
+      }else{
+
+        const nameButton =
+          document.createElement("button");
+
+        nameButton.type =
+          "button";
+
+        nameButton.className =
+          "monster-name";
+
+        nameButton.textContent =
+          monster
+            ? monster.name
+            : "未抽選";
+
+        nameButton.addEventListener(
+          "click",
+          event => {
+
+            event.stopPropagation();
+
+            setActivePokemon(
+              player.index,
+              slot
+            );
+          }
+        );
+
+        unit.appendChild(nameButton);
+      }
+
+      const wrapper =
+        document.createElement("div");
+
+      wrapper.style.display =
+        "contents";
+
+      wrapper.innerHTML =
+        dialMarkup();
+
+      while(wrapper.firstChild){
+
+        unit.appendChild(
+          wrapper.firstChild
+        );
+      }
+
+      player.teamElement.appendChild(unit);
+
+      setupMonsterUnit(
+        player.index,
+        slot,
+        unit
+      );
+    }
+  });
+}
+
+/* =========================
+   個別ダイヤル
+========================= */
+
+function setupMonsterUnit(
+  playerIndex,
+  slot,
+  unit
+){
+
+  const monster =
+    teams[playerIndex][slot];
+
+  const dialContainer =
+    unit.querySelector(".dial-container");
+
+  const svg =
+    unit.querySelector(".hp-dial");
+
+  const progress =
+    unit.querySelector(".dial-progress");
+
+  const hpValue =
+    unit.querySelector(".dial-hp-value");
+
+  const hpPercent =
+    unit.querySelector(".dial-percent");
+
+  const handle =
+    unit.querySelector(".dial-handle");
+
+  const handleCenter =
+    unit.querySelector(".handle-center");
+
+  const handleLine =
+    unit.querySelector(".handle-line");
+
+  const scaleLines =
+    unit.querySelector(".scale-lines");
+
+  const scaleLabels =
+    unit.querySelector(".scale-labels");
+
+  const evolutionButton =
+    unit.querySelector(".evolution-button");
+
+  const resetButton =
+    unit.querySelector(".monster-reset");
+
+  const evolutionOverlay =
+    unit.querySelector(".evolution-overlay");
+
+  const evolutionText =
+    unit.querySelector(".evolution-text");
+
+  if(!monster){
+
+    dialContainer.classList.add(
+      "disabled"
+    );
+
+    createScale(
+      scaleLines,
+      scaleLabels,
+      BASE_MAX_HP
+    );
+
+    resetButton.disabled = true;
+    evolutionButton.disabled = true;
+
+    return;
+  }
+
+  const ratio =
+    monster.hp /
+    monster.maxHp;
+
+  const color =
+    getHpColor(monster.hp);
+
+  const dashOffset =
+    CIRCUMFERENCE *
+    (1 - ratio);
+
+  const angle =
+    hpToAngle(monster);
+
+  const position =
+    polarToCartesian(
+      CENTER_X,
+      CENTER_Y,
+      HANDLE_RADIUS,
+      angle
+    );
+
+  hpValue.textContent =
+    String(monster.hp)
+      .padStart(3,"0");
+
+  hpPercent.textContent =
+    Math.round(
+      ratio * 100
+    ) + "%";
+
+  dialContainer.setAttribute(
+    "aria-valuemax",
+    monster.maxHp
+  );
+
+  dialContainer.setAttribute(
+    "aria-valuenow",
+    monster.hp
+  );
+
+  progress.style.strokeDasharray =
+    CIRCUMFERENCE;
+
+  progress.style.strokeDashoffset =
+    dashOffset;
+
+  progress.style.stroke =
+    color;
+
+  hpValue.style.fill =
+    color;
+
+  handle.style.stroke =
+    color;
+
+  handleCenter.style.fill =
+    color;
+
+  handle.setAttribute(
+    "cx",
+    position.x
+  );
+
+  handle.setAttribute(
+    "cy",
+    position.y
+  );
+
+  handleCenter.setAttribute(
+    "cx",
+    position.x
+  );
+
+  handleCenter.setAttribute(
+    "cy",
+    position.y
+  );
+
+  const inner =
+    polarToCartesian(
+      CENTER_X,
+      CENTER_Y,
+      HANDLE_RADIUS - 4,
+      angle
+    );
+
+  const outer =
+    polarToCartesian(
+      CENTER_X,
+      CENTER_Y,
+      HANDLE_RADIUS + 4,
+      angle
+    );
+
+  handleLine.setAttribute(
+    "x1",
+    inner.x
+  );
+
+  handleLine.setAttribute(
+    "y1",
+    inner.y
+  );
+
+  handleLine.setAttribute(
+    "x2",
+    outer.x
+  );
+
+  handleLine.setAttribute(
+    "y2",
+    outer.y
+  );
+
+  createScale(
+    scaleLines,
+    scaleLabels,
+    monster.maxHp
+  );
+
+  const showEvolution =
+    hasNextEvolution(monster) &&
+    !monster.isEvolving;
+
+  evolutionButton.classList.toggle(
+    "show",
+    showEvolution
+  );
+
+  evolutionButton.disabled =
+    !showEvolution;
+
+  resetButton.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+      monster.name =
+        monster.baseName;
+
+      monster.evolutionStage =
+        0;
+
+      monster.maxHp =
+        BASE_MAX_HP;
+
+      monster.hp =
+        BASE_MAX_HP;
+
+      monster.isEvolving =
+        false;
+
+      renderAll();
+    }
+  );
+
+  evolutionButton.addEventListener(
+    "click",
+    event => {
+
+      event.stopPropagation();
+
+      evolveMonster(
+        monster,
+        unit,
+        evolutionOverlay,
+        evolutionText
+      );
+    }
+  );
+
+  function pointerPosition(event){
+
+    const rect =
+      svg.getBoundingClientRect();
+
+    return {
+      x:
+        (
+          event.clientX -
+          rect.left
+        ) *
+        (360 / rect.width),
+
+      y:
+        (
+          event.clientY -
+          rect.top
+        ) *
+        (360 / rect.height)
+    };
+  }
+
+  function pointerAngle(event){
+
+    const position =
+      pointerPosition(event);
+
+    return Math.atan2(
+      position.y - CENTER_Y,
+      position.x - CENTER_X
+    ) *
+    180 /
+    Math.PI;
+  }
+
+  function jumpToHp(event){
+
+    if(monster.isEvolving){
+      return;
+    }
+
+    const position =
+      pointerPosition(event);
+
+    const dx =
+      position.x - CENTER_X;
+
+    const dy =
+      position.y - CENTER_Y;
+
+    const distance =
+      Math.sqrt(
+        dx * dx +
+        dy * dy
+      );
+
+    if(
+      distance <
+        DIAL_RADIUS - 45 ||
+      distance >
+        DIAL_RADIUS + 45
+    ){
+      return;
+    }
+
+    const angle =
+      Math.atan2(
+        dy,
+        dx
+      ) *
+      180 /
+      Math.PI;
+
+    let clockwiseAngle =
+      angle + 90;
+
+    if(clockwiseAngle < 0){
+      clockwiseAngle += 360;
+    }
+
+    if(clockwiseAngle >= 360){
+      clockwiseAngle -= 360;
+    }
+
+    const stepAngle =
+      degreesPerStep(monster);
+
+    let step =
+      Math.round(
+        clockwiseAngle /
+        stepAngle
+      );
+
+    const totalSteps =
+      monster.maxHp /
+      HP_STEP;
+
+    if(step >= totalSteps){
+      step = 0;
+    }
+
+    let nextHp =
+      step * HP_STEP;
+
+    if(step === 0){
+
+      nextHp =
+        monster.hp >=
+        monster.maxHp / 2
+          ? monster.maxHp
+          : 0;
+    }
+
+    monster.hp =
+      nextHp;
+
+    monster.accumulatedAngle =
+      0;
+
+    monster.previousPointerAngle =
+      null;
+
+    refreshUnit(
+      monster,
+      unit
+    );
+
+    updateStatus();
+  }
+
+  function updateFromDrag(event){
+
+    if(monster.isEvolving){
+      return;
+    }
+
+    const angle =
+      pointerAngle(event);
+
+    if(
+      monster.previousPointerAngle ===
+      null
+    ){
+
+      monster.previousPointerAngle =
+        angle;
+
+      return;
+    }
+
+    let difference =
+      angle -
+      monster.previousPointerAngle;
+
+    if(difference > 180){
+      difference -= 360;
+    }
+
+    if(difference < -180){
+      difference += 360;
+    }
+
+    monster.accumulatedAngle +=
+      difference;
+
+    const stepAngle =
+      degreesPerStep(monster);
+
+    let changed =
+      false;
+
+    while(
+      monster.accumulatedAngle >=
+      stepAngle
+    ){
+
+      if(
+        monster.hp <
+        monster.maxHp
+      ){
+
+        monster.hp =
+          Math.min(
+            monster.maxHp,
+            monster.hp + HP_STEP
+          );
+
+        changed =
+          true;
+      }
+
+      monster.accumulatedAngle -=
+        stepAngle;
+    }
+
+    while(
+      monster.accumulatedAngle <=
+      -stepAngle
+    ){
+
+      if(
+        monster.hp >
+        MIN_HP
+      ){
+
+        monster.hp =
+          Math.max(
+            MIN_HP,
+            monster.hp - HP_STEP
+          );
+
+        changed =
+          true;
+      }
+
+      monster.accumulatedAngle +=
+        stepAngle;
+    }
+
+    if(
+      monster.hp ===
+        monster.maxHp &&
+      monster.accumulatedAngle > 0
+    ){
+      monster.accumulatedAngle = 0;
+    }
+
+    if(
+      monster.hp ===
+        MIN_HP &&
+      monster.accumulatedAngle < 0
+    ){
+      monster.accumulatedAngle = 0;
+    }
+
+    monster.previousPointerAngle =
+      angle;
+
+    if(changed){
+
+      refreshUnit(
+        monster,
+        unit
+      );
+
+      updateStatus();
+    }
+  }
+
+  dialContainer.addEventListener(
+    "pointerdown",
+    event => {
+
+      if(monster.isEvolving){
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      monster.isDragging =
+        true;
+
+      monster.pointerMoved =
+        false;
+
+      monster.pointerStartX =
+        event.clientX;
+
+      monster.pointerStartY =
+        event.clientY;
+
+      monster.previousPointerAngle =
+        pointerAngle(event);
+
+      monster.accumulatedAngle =
+        0;
+
+      dialContainer.classList.add(
+        "dragging"
+      );
+
+      try{
+
+        dialContainer.setPointerCapture(
+          event.pointerId
+        );
+
+      }catch(error){}
+    }
+  );
+
+  dialContainer.addEventListener(
+    "pointermove",
+    event => {
+
+      if(!monster.isDragging){
+        return;
+      }
+
+      event.preventDefault();
+
+      const dx =
+        event.clientX -
+        monster.pointerStartX;
+
+      const dy =
+        event.clientY -
+        monster.pointerStartY;
+
+      const distance =
+        Math.sqrt(
+          dx * dx +
+          dy * dy
+        );
+
+      if(
+        distance >=
+        TAP_MOVE_THRESHOLD
+      ){
+        monster.pointerMoved =
+          true;
+      }
+
+      if(monster.pointerMoved){
+        updateFromDrag(event);
+      }
+    },
+    {
+      passive:false
+    }
+  );
+
+  function finishPointer(
+    event,
+    allowTap
+  ){
+
+    if(
+      monster.isDragging &&
+      allowTap &&
+      !monster.pointerMoved
+    ){
+      jumpToHp(event);
+    }
+
+    monster.isDragging =
+      false;
+
+    monster.pointerMoved =
+      false;
+
+    monster.previousPointerAngle =
+      null;
+
+    monster.accumulatedAngle =
+      0;
+
+    dialContainer.classList.remove(
+      "dragging"
+    );
+
+    try{
+
+      if(
+        dialContainer.hasPointerCapture(
+          event.pointerId
+        )
+      ){
+
+        dialContainer.releasePointerCapture(
+          event.pointerId
+        );
+      }
+
+    }catch(error){}
+  }
+
+  dialContainer.addEventListener(
+    "pointerup",
+    event => {
+
+      finishPointer(
+        event,
+        true
+      );
+    }
+  );
+
+  dialContainer.addEventListener(
+    "pointercancel",
+    event => {
+
+      finishPointer(
+        event,
+        false
+      );
+    }
+  );
+
+  dialContainer.addEventListener(
+    "touchmove",
+    event => {
+
+      event.preventDefault();
+    },
+    {
+      passive:false
+    }
+  );
+}
+
+/* =========================
+   操作中の部分更新
+========================= */
+
+function refreshUnit(
+  monster,
+  unit
+){
+
+  const progress =
+    unit.querySelector(".dial-progress");
+
+  const hpValue =
+    unit.querySelector(".dial-hp-value");
+
+  const hpPercent =
+    unit.querySelector(".dial-percent");
+
+  const handle =
+    unit.querySelector(".dial-handle");
+
+  const handleCenter =
+    unit.querySelector(".handle-center");
+
+  const handleLine =
+    unit.querySelector(".handle-line");
+
+  const ratio =
+    monster.hp /
+    monster.maxHp;
+
+  const color =
+    getHpColor(monster.hp);
+
+  const angle =
+    hpToAngle(monster);
+
+  const position =
+    polarToCartesian(
+      CENTER_X,
+      CENTER_Y,
+      HANDLE_RADIUS,
+      angle
+    );
+
+  progress.style.strokeDasharray =
+    CIRCUMFERENCE;
+
+  progress.style.strokeDashoffset =
+    CIRCUMFERENCE * (1 - ratio);
+
+  progress.style.stroke =
+    color;
+
+  hpValue.textContent =
+    String(monster.hp)
+      .padStart(3,"0");
+
+  hpValue.style.fill =
+    color;
+
+  hpPercent.textContent =
+    Math.round(
+      ratio * 100
+    ) + "%";
+
+  handle.style.stroke =
+    color;
+
+  handleCenter.style.fill =
+    color;
+
+  handle.setAttribute(
+    "cx",
+    position.x
+  );
+
+  handle.setAttribute(
+    "cy",
+    position.y
+  );
+
+  handleCenter.setAttribute(
+    "cx",
+    position.x
+  );
+
+  handleCenter.setAttribute(
+    "cy",
+    position.y
+  );
+
+  const inner =
+    polarToCartesian(
+      CENTER_X,
+      CENTER_Y,
+      HANDLE_RADIUS - 4,
+      angle
+    );
+
+  const outer =
+    polarToCartesian(
+      CENTER_X,
+      CENTER_Y,
+      HANDLE_RADIUS + 4,
+      angle
+    );
+
+  handleLine.setAttribute(
+    "x1",
+    inner.x
+  );
+
+  handleLine.setAttribute(
+    "y1",
+    inner.y
+  );
+
+  handleLine.setAttribute(
+    "x2",
+    outer.x
+  );
+
+  handleLine.setAttribute(
+    "y2",
+    outer.y
+  );
+}
+
+/* =========================
+   進化
+========================= */
+
+function evolveMonster(
+  monster,
+  unit,
+  overlay,
+  textElement
+){
+
+  if(
+    monster.isEvolving ||
+    !hasNextEvolution(monster)
+  ){
+    return;
+  }
+
+  const line =
+    getEvolutionLine(monster);
+
+  const nextStage =
+    monster.evolutionStage + 1;
+
+  const next =
+    line[nextStage];
+
+  const damage =
+    monster.maxHp -
+    monster.hp;
+
+  monster.isEvolving =
+    true;
+
+  textElement.textContent =
+    "EVOLUTION";
+
+  overlay.classList.add(
+    "active"
+  );
+
+  unit.classList.add(
+    "evolving"
+  );
+
+  window.setTimeout(
+    () => {
+
+      monster.evolutionStage =
+        nextStage;
+
+      monster.name =
+        next.name;
+
+      monster.maxHp =
+        next.maxHp;
+
+      monster.hp =
+        Math.max(
+          MIN_HP,
+          monster.maxHp -
+          damage
+        );
+
+      textElement.textContent =
+        next.name;
+
+      const nameElement =
+        unit.querySelector(
+          ".monster-name, .current-name"
+        );
+
+      if(nameElement){
+        nameElement.textContent =
+          next.name;
+      }
+
+      const scaleLines =
+        unit.querySelector(
+          ".scale-lines"
+        );
+
+      const scaleLabels =
+        unit.querySelector(
+          ".scale-labels"
+        );
+
+      createScale(
+        scaleLines,
+        scaleLabels,
+        monster.maxHp
+      );
+
+      refreshUnit(
+        monster,
+        unit
+      );
+
+      updateStatus();
+
+    },
+    650
+  );
+
+  window.setTimeout(
+    () => {
+
+      overlay.classList.remove(
+        "active"
+      );
+
+      unit.classList.remove(
+        "evolving"
+      );
+
+      monster.isEvolving =
+        false;
+
+      renderAll();
+
+    },
+    1550
+  );
+}
+
+/* =========================
+   ステータス
+========================= */
+
+function updateStatus(){
+
+  const activeMonster1 =
+    active[0] !== null
+      ? teams[0][active[0]]
+      : null;
+
+  const activeMonster2 =
+    active[1] !== null
+      ? teams[1][active[1]]
+      : null;
+
+  if(mode === "free"){
+
+    statusEl.textContent =
+      `フリー対戦：${playerName(0)}［${
+        activeMonster1
+          ? activeMonster1.name
+          : "未選択"
+      }］ VS ${playerName(1)}［${
+        activeMonster2
+          ? activeMonster2.name
+          : "未選択"
+      }］`;
+
+    return;
+  }
+
+  const count =
+    teams
+      .flat()
+      .filter(Boolean)
+      .length;
+
+  if(count >= 6){
+
+    statusEl.textContent =
+      `対戦中：${playerName(0)}［${
+        activeMonster1
+          ? activeMonster1.name
+          : "未選択"
+      }］ VS ${playerName(1)}［${
+        activeMonster2
+          ? activeMonster2.name
+          : "未選択"
+      }］`;
+
+    return;
+  }
+
+  const playerIndex =
+    count % 2;
+
+  const playerCount =
+    teams[playerIndex]
+      .filter(Boolean)
+      .length;
+
+  statusEl.textContent =
+    `${playerName(playerIndex)}が「くじを引く」を押してください（${
+      playerCount + 1
+    }匹目）`;
+}
+
+/* =========================
+   全体表示
+========================= */
+
+function renderAll(){
+
+  drawBtn.classList.toggle(
+    "hidden",
+    mode !== "random"
+  );
+
+  redrawBtn.classList.toggle(
+    "hidden",
+    mode !== "random"
+  );
+
+  renderTeams();
+  updateStatus();
+}
+
+/* =========================
+   リセット
+========================= */
+
+function resetBattle(){
+
+  teams = [
+    [null,null,null],
+    [null,null,null]
+  ];
+
+  active = [
+    null,
+    null
+  ];
+
+  lastDraw =
+    null;
+
+  renderAll();
+}
+
+/* =========================
+   モード変更
+========================= */
+
+modeSelect.addEventListener(
+  "change",
+  () => {
+
+    mode =
+      modeSelect.value;
+
+    resetBattle();
+  }
+);
+
+/* =========================
+   ランダム抽選
+========================= */
+
+drawBtn.addEventListener(
+  "click",
+  () => {
+
+    const count =
+      teams
+        .flat()
+        .filter(Boolean)
+        .length;
+
+    if(count >= 6){
+      return;
+    }
+
+    const playerIndex =
+      count % 2;
+
+    const slot =
+      teams[playerIndex]
+        .findIndex(
+          monster => !monster
+        );
+
+    if(slot < 0){
+      return;
+    }
+
+    const monster =
+      randomMonster();
+
+    if(!monster){
+      return;
+    }
+
+    teams[playerIndex][slot] =
+      monster;
+
+    /*
+      初めて抽選されたポケモンを
+      対戦中にする
+    */
+
+    if(active[playerIndex] === null){
+
+      active[playerIndex] =
+        slot;
+    }
+
+    lastDraw = {
+      playerIndex,
+      slot
+    };
+
+    renderAll();
+  }
+);
+
+/* =========================
+   引き直し
+========================= */
+
+redrawBtn.addEventListener(
+  "click",
+  () => {
+
+    if(!lastDraw){
+      return;
+    }
+
+    const {
+      playerIndex,
+      slot
+    } = lastDraw;
+
+    const oldMonster =
+      teams[playerIndex][slot];
+
+    teams[playerIndex][slot] =
+      null;
+
+    const newMonster =
+      randomMonster();
+
+    teams[playerIndex][slot] =
+      newMonster ||
+      oldMonster;
+
+    renderAll();
+  }
+);
+
+/* =========================
+   全体RESET
+========================= */
+
+resetBtn.addEventListener(
+  "click",
+  resetBattle
+);
+
+/* =========================
+   プレイヤー操作
+========================= */
+
+players.forEach(player => {
+
+  player.nameInput.addEventListener(
+    "input",
+    updateStatus
+  );
+
+  player.resetButton.addEventListener(
+    "click",
+    () => {
+
+      teams[player.index] =
+        [null,null,null];
+
+      active[player.index] =
+        null;
+
+      lastDraw =
+        null;
+
+      renderAll();
+    }
+  );
+});
+
+/* =========================
+   スクロール防止
+========================= */
+
+document.addEventListener(
+  "touchmove",
+  event => {
+
+    if(
+      event.target.closest(
+        ".dial-container"
+      )
+    ){
+      event.preventDefault();
+    }
+  },
+  {
+    passive:false
+  }
+);
+
+/* =========================
+   初期表示
+========================= */
+
+renderAll();
+
 </script>
+
 </body>
 </html>
